@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 20%;
+            background-color: #f4f4f4;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 10px;
+            font-size: 1.5em;
+            text-align: center;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .channel-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .channel {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .channel:hover {
+            background-color: #e0e0e0;
+        }
+
+        .chat-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+        }
+
+        .chat-header {
+            padding: 10px;
+            font-size: 1.2em;
+            border-bottom: 1px solid #ddd;
+            background-color: #f4f4f4;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+            max-width: 60%;
+        }
+
+        .message .avatar {
+            margin-right: 10px;
+            font-size: 2em;
+        }
+
+        .message .text {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .username {
+            font-weight: bold;
+        }
+
+        .content {
+            margin-top: 5px;
+        }
+
+        .reactions {
+            margin-top: 5px;
+            font-size: 1.2em;
+        }
+
+        .my-message {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        .my-message .avatar {
+            order: 2;
+            margin-left: 10px;
+            margin-right: 0;
+        }
+
+        .my-message .text {
+            background-color: #dcf8c6;
+        }
+
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .chat-input button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            font-size: 1em;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background-color: #0056b3;
+        }
+
+
+    </style>
+    <title>Chat UI</title>
+</head>
+<body>
+<div class="chat-container">
+    <div class="sidebar">
+        <div class="sidebar-header">IEUMSAE</div>
+        <ul class="channel-list">
+            <li class="channel" data-channel="chat1">수다</li>
+            <li class="channel" data-channel="chat2">Javascript</li>
+            <li class="channel" data-channel="chat3">Typescript</li>
+            <li class="channel" data-channel="chat4">Vue</li>
+            <li class="channel" data-channel="chat5">React</li>
+        </ul>
+    </div>
+    <div class="chat-content">
+        <div class="chat-header">수다</div>
+        <div class="chat-messages">
+            <!-- 메시지가 JavaScript로 여기에서 업데이트됩니다. -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type a message..." />
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 채널별 채팅 메시지 데이터를 정의합니다.
+        const chatData = {
+            chat1: [
+                { username: 'mimela98', message: '좋은 아침입니다.', reactions: '😊' },
+                { username: 'kidow', message: '실시간으로 타이핑 중인 유저를 텍스트에어리어 밑에 표시하는 기능을 추가했습니다!', reactions: '👍' }
+            ],
+            chat2: [
+                { username: 'jsMaster', message: '자바스크립트는 정말 재미있어요!', reactions: '🔥' },
+                { username: 'devGuy', message: 'ES6 문법이 너무 좋아요.', reactions: '👌' }
+            ],
+            chat3: [
+                { username: 'typeFan', message: '타입스크립트 덕분에 코드가 안전해졌어요.', reactions: '✅' }
+            ],
+            chat4: [
+                { username: 'vueLover', message: 'Vue는 정말 강력한 프레임워크입니다.', reactions: '🌟' }
+            ],
+            chat5: [
+                { username: 'reactDev', message: 'React Hook을 배우고 있어요.', reactions: '🎣' }
+            ]
+        };
+
+        // 채널 요소들을 선택합니다.
+        const channelElements = document.querySelectorAll('.channel');
+        const chatMessagesElement = document.querySelector('.chat-messages');
+        const chatHeaderElement = document.querySelector('.chat-header');
+        const messageInputElement = document.getElementById('messageInput');
+        const sendButtonElement = document.getElementById('sendButton');
+
+        let currentChannel = 'chat1'; // 현재 선택된 채널을 저장하는 변수
+
+        // 채널을 클릭할 때마다 이벤트를 추가합니다.
+        channelElements.forEach(channelElement => {
+            channelElement.addEventListener('click', () => {
+                const channelId = channelElement.getAttribute('data-channel');
+                currentChannel = channelId; // 현재 채널 업데이트
+
+                // 채널 제목 업데이트
+                chatHeaderElement.textContent = channelElement.textContent;
+
+                // 채팅 메시지를 해당 채널의 데이터로 업데이트
+                const messages = chatData[channelId];
+                chatMessagesElement.innerHTML = ''; // 이전 메시지를 지웁니다.
+
+                // 새 메시지를 생성하여 추가합니다.
+                messages.forEach(message => {
+                    const messageElement = createMessageElement(message.username, message.message, message.reactions, message.username === '나');
+                    chatMessagesElement.appendChild(messageElement);
+                });
+            });
+        });
+
+        // 메시지 엘리먼트를 생성하는 함수
+        function createMessageElement(username, message, reactions, isMyMessage) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            if (isMyMessage) {
+                messageElement.classList.add('my-message');
+            }
+            messageElement.innerHTML = `
+            <div class="avatar">🙋‍♂️</div>
+            <div class="text">
+                <div class="username">${username}</div>
+                <div class="content">${message}</div>
+                <div class="reactions">${reactions}</div>
+            </div>
+        `;
+            return messageElement;
+        }
+
+        // 메시지를 보낼 때 이벤트
+        sendButtonElement.addEventListener('click', sendMessage);
+        messageInputElement.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 메시지를 보내는 함수
+        function sendMessage() {
+            const messageText = messageInputElement.value.trim();
+            if (messageText === '') return;
+
+            // 메시지를 채팅 데이터에 추가
+            const newMessage = { username: '나', message: messageText, reactions: '' };
+            chatData[currentChannel].push(newMessage);
+
+            // 메시지를 화면에 표시
+            const messageElement = createMessageElement('나', messageText, '', true);
+            chatMessagesElement.appendChild(messageElement);
+
+            // 입력 필드 초기화
+            messageInputElement.value = '';
+
+            // 새 메시지가 화면에 보이도록 스크롤
+            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        }
+
+        // 기본적으로 첫 번째 채널을 선택합니다.
+        if (channelElements.length > 0) {
+            channelElements[0].click();
+        }
+    });
+
+</script>
+</body>
+</html>
